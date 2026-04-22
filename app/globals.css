@@ -1,26 +1,113 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* ─── Colors ─────────────────────────────────────────────── */
+  --color-primary:                    #4647d3;
+  --color-primary-dim:                #3939c7;
+  --color-primary-fixed:              #9396ff;
+  --color-primary-fixed-dim:          #8387ff;
+  --color-primary-container:          #9396ff;
+  --color-on-primary:                 #f4f1ff;
+  --color-on-primary-fixed:           #000000;
+  --color-on-primary-fixed-variant:   #0e009d;
+  --color-on-primary-container:       #0a0081;
+  --color-inverse-primary:            #8083ff;
+  --color-surface-tint:               #4647d3;
+
+  --color-secondary:                  #8126cf;
+  --color-secondary-dim:              #740ec2;
+  --color-secondary-fixed:            #e5c6ff;
+  --color-secondary-fixed-dim:        #dbb4ff;
+  --color-secondary-container:        #e5c6ff;
+  --color-on-secondary:               #fbefff;
+  --color-on-secondary-fixed:         #4f0089;
+  --color-on-secondary-fixed-variant: #7511c3;
+  --color-on-secondary-container:     #6900b4;
+
+  --color-tertiary:                   #b00d6a;
+  --color-tertiary-dim:               #9d005d;
+  --color-tertiary-fixed:             #ff8cbc;
+  --color-tertiary-fixed-dim:         #ff73b1;
+  --color-tertiary-container:         #ff8cbc;
+  --color-on-tertiary:                #ffeff2;
+  --color-on-tertiary-fixed:          #37001d;
+  --color-on-tertiary-fixed-variant:  #740044;
+  --color-on-tertiary-container:      #64003a;
+
+  --color-error:                      #b41340;
+  --color-error-dim:                  #a70138;
+  --color-error-container:            #f74b6d;
+  --color-on-error:                   #ffefef;
+  --color-on-error-container:         #510017;
+
+  --color-background:                 #f5f7f9;
+  --color-on-background:              #2c2f31;
+
+  --color-surface:                    #f5f7f9;
+  --color-surface-bright:             #f5f7f9;
+  --color-surface-variant:            #d9dde0;
+  --color-surface-container-lowest:   #ffffff;
+  --color-surface-container-low:      #eef1f3;
+  --color-surface-container:          #e5e9eb;
+  --color-surface-container-high:     #dfe3e6;
+  --color-surface-container-highest:  #d9dde0;
+  --color-on-surface:                 #2c2f31;
+  --color-on-surface-variant:         #595c5e;
+  --color-inverse-surface:            #0b0f10;
+  --color-inverse-on-surface:         #9a9d9f;
+
+  --color-outline:                    #747779;
+  --color-outline-variant:            #abadaf;
+
+  /* ─── Typography ─────────────────────────────────────────── */
+  --font-headline: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body:     "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-label:    "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:     "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* ─── Border Radius ──────────────────────────────────────── */
+  --radius:     0.25rem;
+  --radius-lg:  0.5rem;
+  --radius-xl:  0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-full: 9999px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer components {
+  /* Fonts */
+  .font-headline {
+    font-family: var(--font-headline);
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Material Icons */
+  .material-symbols-outlined {
+    font-variation-settings:
+      "FILL" 0,
+      "wght" 400,
+      "GRAD" 0,
+      "opsz" 24;
+  }
+
+  /* Glass & borders */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .no-line {
+    border: none !important;
+  }
+
+  .ghost-border {
+    border: 1.5px solid rgba(171, 173, 175, 0.15);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom UI */
+.primary {
+  background: #4647d3;
 }
+
+
