@@ -5,7 +5,7 @@ const nodeWidth = 150;
 const nodeHeight = 190;
 const SPOUSE_GAP = 40;
 const SIBLING_GAP = 80;
-const MARRIAGE_Y_OFFSET = 200; 
+const MARRIAGE_Y_OFFSET = 0; 
 
 export const getLayoutedElements = <T extends Record<string, unknown>>(
   nodes: Node<T>[],
@@ -31,9 +31,9 @@ export const getLayoutedElements = <T extends Record<string, unknown>>(
   // ✅ Total width of a node + all its spouses (used as dagre node width)
   const getTotalWidth = (id: string): number => {
     const spouses = primaryToSpouses.get(id) ?? [];
+    if (spouses.length === 0) return nodeWidth;
     return nodeWidth + spouses.length * (SPOUSE_GAP + nodeWidth);
   };
-
   // ✅ Register only primary nodes in dagre, with their TOTAL width
   //    so dagre spaces children correctly under the couple unit
   nodes.forEach((node) => {
@@ -58,10 +58,14 @@ export const getLayoutedElements = <T extends Record<string, unknown>>(
             : [parentId];
 
         // ✅ Use first non-spouse parent for dagre ranking
-        const primaryParentId = parentIds.find(
-            (pid) => !spouseIds.has(pid) && dagreGraph.hasNode(pid)
-        );
-
+        // const primaryParentId = parentIds.find(
+        //     (pid) => !spouseIds.has(pid) && dagreGraph.hasNode(pid)
+        // );
+       const primaryParentId =parentIds.find((pid) => dagreGraph.hasNode(pid)) || null;
+  //       const primaryParentId =
+  // parentIds.length === 2
+  //   ? parentIds[0] // 👈 use first parent when both exist
+  //   : parentIds.find((pid) => dagreGraph.hasNode(pid)) || null;
         if (
             primaryParentId &&
             !spouseIds.has(node.id) &&

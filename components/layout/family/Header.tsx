@@ -24,7 +24,7 @@ export default function Header({
           </button>
 
           <h1 className="text-xl font-bold text-indigo-600">
-            Ancestral Tapestry
+            MOM
           </h1>
 
           {/* Search */}

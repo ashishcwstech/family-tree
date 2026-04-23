@@ -25,12 +25,13 @@ const CustomNode = ({ data }: CustomNodeProps) => {
         type="target"
         position={Position.Top}
         id="top"
-        style={{ opacity: 0 }}
+        style={{ opacity: 0
+          
+         }}
       />
 
       {/* ✅ id="spouse-out" — matches sourceHandle: "spouse-out" on marriage edge */}
-      {data.spouseRole === "source" && (
-        <Handle
+       <Handle
           type="source"
           position={Position.Right}
           id="spouse-out"
@@ -39,28 +40,31 @@ const CustomNode = ({ data }: CustomNodeProps) => {
             width: 10,
             height: 10,
             border: "2px solid white",
-            top: "50%", // 👈 always vertically centered
-            transform: "translateY(-50%)",
-          }}
-        />
-      )}
-
-      {/* ✅ id="spouse-in" — matches targetHandle: "spouse-in" on marriage edge */}
-      {data.spouseRole === "target" && (
-        <Handle
-          type="target"
-          position={Position.Left}
-          id="spouse-in"
-          style={{
-            background: "#e11d48",
-            width: 10,
-            height: 10,
-            border: "2px solid white",
+            borderRadius: "50%",
             top: "50%",
             transform: "translateY(-50%)",
+            opacity: data.spouseRole === "source" ? 1 : 0,
+            pointerEvents: "none",
           }}
         />
-      )}
+
+      {/* ✅ id="spouse-in" — matches targetHandle: "spouse-in" on marriage edge */}
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="spouse-in"
+        style={{
+          background: "#e11d48",
+          width: 10,
+          height: 10,
+          border: "2px solid white",
+          borderRadius: "50%",
+          top: "50%",
+          transform: "translateY(-50%)",
+          opacity: data.spouseRole === "target" ? 1 : 0,
+          pointerEvents: "none",
+        }}
+      />
 
       <div className="w-16 h-16 rounded-full overflow-hidden mb-3 border-2 border-primary-container">
         <img
@@ -74,6 +78,9 @@ const CustomNode = ({ data }: CustomNodeProps) => {
       </span>
       <span className="text-[10px] text-on-surface-variant font-medium mt-1">
         {data.subText}
+      </span>
+      <span className="text-[10px] text-on-surface-variant font-medium mt-1">
+        {data.gender}
       </span>
 
       <Handle
@@ -134,7 +141,7 @@ export default function FamilyTreeLayout() {
           type: "step",
           animated: true,
         }}
-      
+        //nodesDraggable={false}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         // onConnect={onConnect}

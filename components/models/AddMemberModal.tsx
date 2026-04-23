@@ -5,10 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { initialNodes, addNode } from "@/store/familySlice";
+import { initialNodes, addNode, setTree } from "@/store/familySlice";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store/store";
-import { FamilyNode } from "@/types/family";
+import { FamilyEdge, FamilyNode } from "@/types/family";
+import { getLayoutedElements } from "@/lib/layout/dagreLayout";
+import { useAppSelector } from "@/store/hooks";
 
 type Step = 1 | 2 | 3;
 
@@ -23,24 +25,34 @@ export const memberSchema = z.object({
         issue.input === undefined ? "Gender is required" : "Not a string",
     })
     .min(1, "Select gender"),
-  day: z.string(),
+
   month: z.string().min(1, "Select month"),
-  year: z.string(),
+
+  day: z.number().min(1).max(31).or(z.nan()),
+  year: z.number().min(1900).max(new Date().getFullYear()).or(z.nan()),
   motherId: z.string().optional(),
   fatherId: z.string().optional(),
   profileImage: z.any().optional(),
+  spouseId: z.string().optional(),
 });
 
 export default function AddMemberModal({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState<Step>(1);
   const dispatch = useDispatch();
   const nodes = useSelector((state: RootState) => state.family.nodes);
+  const edges = useAppSelector((s) => s.family.edges);
+
+  const [selectedMotherId, setSelectedMotherId] = useState<string | null>(null);
+  const [selectedFatherId, setSelectedFatherId] = useState<string | null>(null);
+  const [selectedSpouseId, setSelectedSpouseId] = useState<string | null>(null);
 
   const [motherQuery, setMotherQuery] = useState("");
   const [fatherQuery, setFatherQuery] = useState("");
+  const [spouseQuery, setSpouseQuery] = useState("");
 
   const [showMother, setShowMother] = useState(false);
   const [showFather, setShowFather] = useState(false);
+  const [showSpouse, setShowSpouse] = useState(false);
 
   const mothers = nodes.filter(
     (n) =>
@@ -48,11 +60,44 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
       n.data.label.toLowerCase().includes(motherQuery.toLowerCase()),
   );
 
+  const filteredMothers = selectedFatherId
+    ? edges
+        .filter(
+          (e) =>
+            e.data?.edgeType === "marriage" && e.source === selectedFatherId,
+        )
+        .map((e) => nodes.find((n) => n.id === e.target))
+        .filter(Boolean)
+    : mothers;
+
   const fathers = nodes.filter(
     (n) =>
       n.data.gender === "male" &&
       n.data.label.toLowerCase().includes(fatherQuery.toLowerCase()),
   );
+  const filteredFathers = selectedMotherId
+    ? edges
+        .filter(
+          (e) =>
+            e.data?.edgeType === "marriage" && e.target === selectedMotherId,
+        )
+        .map((e) => nodes.find((n) => n.id === e.source))
+        .filter(Boolean)
+    : fathers;
+
+  const onMotherSelect = (id: string) => {
+    console.log("Selected mother ID:", motherQuery);
+    setSelectedMotherId(id);
+  };
+  const onFatherSelect = (id: string) => {
+    console.log("Selected father ID:", id);
+    setSelectedFatherId(id);
+  };
+
+  const onSpouseSelect = (id: string) => {
+    console.log("Selected spouse ID:", id);
+    setSelectedSpouseId(id);
+  };
 
   const {
     register,
@@ -64,6 +109,11 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
     resolver: zodResolver(memberSchema),
   });
   const selectedGender = watch("gender");
+  const spouses = nodes.filter((n) => {
+    if (!selectedGender) return true;
+    // prevent same gender (basic logic, adjust if needed)
+    return n.data.gender !== selectedGender;
+  });
 
   const onSubmit = (data: FormData) => {
     if (step < 3) {
@@ -76,26 +126,103 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
         data: {
           parentId:
             data.motherId || data.fatherId
-              ? [data.fatherId, data.motherId].filter((id): id is string => id !== undefined)
+              ? [data.fatherId, data.motherId].filter(
+                  (id): id is string => id !== undefined,
+                )
               : [],
-          marriageId: data.motherId && data.fatherId ? `${data.fatherId}-${data.motherId}` : undefined,
+          marriageId:
+            data.motherId && data.fatherId
+              ? `${data.fatherId}-${data.motherId}`
+              : undefined,
           label: `${data.firstName} ${data.lastName}`,
           subText: data.year ? `Born ${data.year}` : "",
 
           gender: data.gender,
           spouseRole: undefined,
-            
+
           image:
             data.profileImage instanceof File
               ? URL.createObjectURL(data.profileImage)
-              : null,
-
+              : data.gender == "Male"
+                ? "https://randomuser.me/api/portraits/men/32.jpg"
+                : "https://randomuser.me/api/portraits/women/44.jpg",
           description: "",
         },
       };
+
       console.log("newNode:", newNode);
 
-      dispatch(addNode(newNode));
+      // 🔥 get current state
+      const currentNodes = [...nodes, newNode];
+      let currentEdges = [...edges];
+      // ✅ add marriage edge if both parents exist
+      if (data.fatherId && data.motherId) {
+        const edgeId = `${data.fatherId}-${data.motherId}`;
+        const alreadyExists = currentEdges.some((e) => e.id === edgeId);
+        if (!alreadyExists) {
+          currentEdges.push({
+            id: edgeId,
+            source: data.fatherId,
+            target: data.motherId,
+            type: "marriage",
+            sourceHandle: "spouse-out",
+            targetHandle: "spouse-in",
+            data: { edgeType: "marriage" },
+            animated: false,
+            style: { stroke: "#e11d48", strokeWidth: 2 },
+          });
+        }
+      }
+
+      //spouse edge
+      let updatedNodes = currentNodes;
+
+      if (data.spouseId) {
+        const edgeId = `${newNode.id}-${data.spouseId}`;
+
+        currentEdges.push({
+          id: edgeId,
+          source: newNode.id,
+          target: data.spouseId,
+          type: "marriage",
+          sourceHandle: "spouse-out",
+          targetHandle: "spouse-in",
+          data: { edgeType: "marriage" },
+          animated: false,
+          style: { stroke: "#e11d48", strokeWidth: 2 },
+        });
+
+        // ✅ FIX: no "const" here
+        updatedNodes = currentNodes.map((n) => {
+          if (n.id === newNode.id) {
+            return {
+              ...n,
+              data: { ...n.data, spouseRole: "source" },
+            };
+          }
+          if (n.id === data.spouseId) {
+            return {
+              ...n,
+              data: { ...n.data, spouseRole: "target" },
+            };
+          }
+          return n;
+        });
+      }
+
+      
+
+      // 🔥 APPLY DAGRE LAYOUT HERE
+      const finalNodes = data.spouseId ? updatedNodes : currentNodes;
+      const { nodes: layoutedNodes, edges: layoutedEdges } =
+        getLayoutedElements(finalNodes, currentEdges);
+
+      dispatch(
+        setTree({
+          nodes: layoutedNodes as FamilyNode[],
+          edges: layoutedEdges as FamilyEdge[],
+        }),
+      );
       onClose(); // close modal
     }
   };
@@ -229,10 +356,21 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <input
-                        type="string"
+                        type="number"
                         placeholder="DD"
+                        min={1}
+                        max={31}
+                        onInput={(e) => {
+                          const value = Number(e.currentTarget.value);
+                          if (value > 31) e.currentTarget.value = "31";
+                          if (value < 1) e.currentTarget.value = "1";
+                        }}
+                        {...register("day", {
+                          valueAsNumber: true,
+                          min: 1,
+                          max: 31,
+                        })}
                         className="w-full bg-surface-container-low border border-transparent rounded-lg p-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
-                        {...register("day")}
                       />
                       <p className="text-red-500 text-sm">
                         {errors.day?.message}
@@ -267,11 +405,17 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
                     </div>
                     <div>
                       <input
-                        type="string"
+                        type="number"
                         placeholder="YYYY"
-                        min={1900}
                         max={2099}
-                        {...register("year")}
+                        {...register("year", {
+                          valueAsNumber: true,
+                          min: { value: 1900, message: "Min year is 1900" },
+                          max: {
+                            value: new Date().getFullYear(),
+                            message: "Invalid future year",
+                          },
+                        })}
                         className="w-full bg-surface-container-low border border-transparent rounded-lg p-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
                       />
                       <p className="text-red-500 text-sm">
@@ -305,11 +449,6 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
                   <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2 ml-1">
                     Mother
                   </label>
-                  {/* <input
-                    type="text"
-                    placeholder="Search mother..."
-                    className="w-full bg-surface-container-low border-none rounded-lg p-3 text-on-surface focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                  /> */}
                   <input
                     type="text"
                     value={motherQuery}
@@ -321,16 +460,17 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
                     placeholder="Search mother..."
                     className="w-full bg-surface-container-low rounded-lg p-3"
                   />
-                  {showMother && (
+                  {showMother && motherQuery.trim() !== "" && (
                     <div className="absolute z-10 w-full bg-white shadow-lg rounded-lg mt-1 max-h-48 overflow-y-auto">
-                      {mothers.length > 0 ? (
-                        mothers.map((m) => (
+                      {filteredMothers.length > 0 ? (
+                        filteredMothers.map((m: any) => (
                           <div
                             key={m.id}
                             onClick={() => {
                               setValue("motherId", m.id); // 👈 store selected id
                               setMotherQuery(m.data.label);
                               setShowMother(false);
+                              onMotherSelect(m.id);
                             }}
                             className="p-3 hover:bg-gray-100 cursor-pointer"
                           >
@@ -365,16 +505,17 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
                     placeholder="Search father..."
                     className="w-full bg-surface-container-low rounded-lg p-3"
                   />
-                  {showFather && (
+                  {showFather  && fatherQuery.trim() !== "" && (
                     <div className="absolute z-10 w-full bg-white shadow-lg rounded-lg mt-1 max-h-48 overflow-y-auto">
-                      {fathers.length > 0 ? (
-                        fathers.map((f) => (
+                      {filteredFathers.length > 0 ? (
+                        filteredFathers.map((f: any) => (
                           <div
                             key={f.id}
                             onClick={() => {
                               setValue("fatherId", f.id); // 👈 store selected id
                               setFatherQuery(f.data.label);
                               setShowFather(false);
+                              onFatherSelect(f.id);
                             }}
                             className="p-3 hover:bg-gray-100 cursor-pointer"
                           >
@@ -397,9 +538,39 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
                 </label>
                 <input
                   type="text"
+                  value={spouseQuery}
+                  onChange={(e) => {
+                    setSpouseQuery(e.target.value);
+                    setShowSpouse(true);
+                  }}
+                  onFocus={() => setShowSpouse(true)}
                   placeholder="Search spouse..."
-                  className="w-full bg-surface-container-low border-none rounded-lg p-3 text-on-surface focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  className="w-full bg-surface-container-low rounded-lg p-3"
                 />
+                {showSpouse && spouseQuery.trim() !== "" && (
+                  <div className="absolute z-10 w-full bg-white shadow-lg rounded-lg mt-1 max-h-48 overflow-y-auto">
+                    {spouses
+                      .filter((s) =>
+                        s.data.label
+                          .toLowerCase()
+                          .includes(spouseQuery.toLowerCase()),
+                      )
+                      .map((s) => (
+                        <div
+                          key={s.id}
+                          onClick={() => {
+                            setValue("spouseId", s.id); // 👈 store selected id
+                            setSpouseQuery(s.data.label);
+                            setShowSpouse(false);
+                            onSpouseSelect(s.id);
+                          }}
+                          className="p-3 hover:bg-gray-100 cursor-pointer"
+                        >
+                          {s.data.label}
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-4">
@@ -453,7 +624,9 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
                   />
                 </div>
                 <p className="text-red-500 text-sm">
-                  {typeof errors.profileImage?.message === "string" ? errors.profileImage.message : ""}
+                  {typeof errors.profileImage?.message === "string"
+                    ? errors.profileImage.message
+                    : ""}
                 </p>
               </div>
 
@@ -467,6 +640,7 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
                     { label: "Census Records", icon: "analytics" },
                   ].map((doc) => (
                     <button
+                      type="button"
                       key={doc.label}
                       className="flex items-center gap-3 p-4 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low transition-all text-left"
                     >
@@ -488,6 +662,7 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
 
           <div className="p-8 border-t border-outline-variant/10 flex items-center justify-between">
             <button
+              type="button"
               onClick={() =>
                 step === 1 ? onClose() : setStep((s) => (s - 1) as Step)
               }
