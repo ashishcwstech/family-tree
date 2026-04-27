@@ -25,9 +25,7 @@ export const memberSchema = z.object({
         issue.input === undefined ? "Gender is required" : "Not a string",
     })
     .min(1, "Select gender"),
-
   month: z.string().min(1, "Select month"),
-
   day: z.number().min(1).max(31).or(z.nan()),
   year: z.number().min(1900).max(new Date().getFullYear()).or(z.nan()),
   motherId: z.string().optional(),
@@ -56,7 +54,7 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
 
   const mothers = nodes.filter(
     (n) =>
-      n.data.gender === "female" &&
+      n.data.gender == "female" &&
       n.data.label.toLowerCase().includes(motherQuery.toLowerCase()),
   );
 
@@ -72,7 +70,7 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
 
   const fathers = nodes.filter(
     (n) =>
-      n.data.gender === "male" &&
+      n.data.gender == "male" &&
       n.data.label.toLowerCase().includes(fatherQuery.toLowerCase()),
   );
   const filteredFathers = selectedMotherId
@@ -143,7 +141,7 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
           image:
             data.profileImage instanceof File
               ? URL.createObjectURL(data.profileImage)
-              : data.gender == "Male"
+              : data.gender == "male"
                 ? "https://randomuser.me/api/portraits/men/32.jpg"
                 : "https://randomuser.me/api/portraits/women/44.jpg",
           description: "",
@@ -321,9 +319,9 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
                   </label>
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { label: "Female", icon: "female" },
-                      { label: "Male", icon: "male" },
-                      { label: "Other", icon: "diversity_3" },
+                      { label: "female", icon: "female" },
+                      { label: "male", icon: "male" },
+                      { label: "other", icon: "diversity_3" },
                     ].map((g) => (
                       <button
                         key={g.label}
