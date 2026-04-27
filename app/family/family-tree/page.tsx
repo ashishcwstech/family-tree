@@ -18,8 +18,14 @@ import { setLayoutedNodes, setTree } from "@/store/familySlice";
 
 
 const CustomNode = ({ data }: CustomNodeProps) => {
+   const hasParent = Array.isArray(data.parentId)
+    ? data.parentId.length > 0
+    : !!data.parentId;
   return (
     <div className="z-10 bg-surface-container-lowest p-4 rounded-xl shadow-[0px_8px_24px_rgba(44,47,49,0.06)] flex flex-col items-center w-36 hover:ring-2 hover:ring-primary transition-all cursor-pointer">
+    
+      
+      
       {/* ✅ id="top" — matches targetHandle: "top" on child edges */}
       <Handle
         type="target"
@@ -141,7 +147,7 @@ export default function FamilyTreeLayout() {
           type: "step",
           animated: true,
         }}
-        //nodesDraggable={false}
+       nodesDraggable={false}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         // onConnect={onConnect}

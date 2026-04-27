@@ -179,11 +179,10 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
 
       if (data.spouseId) {
         const edgeId = `${newNode.id}-${data.spouseId}`;
-
         currentEdges.push({
           id: edgeId,
-          source: newNode.id,
-          target: data.spouseId,
+          source:data.spouseId,
+          target: newNode.id ,
           type: "marriage",
           sourceHandle: "spouse-out",
           targetHandle: "spouse-in",
@@ -197,13 +196,13 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
           if (n.id === newNode.id) {
             return {
               ...n,
-              data: { ...n.data, spouseRole: "source" },
+              data: { ...n.data, spouseRole: "target" },
             };
           }
           if (n.id === data.spouseId) {
             return {
               ...n,
-              data: { ...n.data, spouseRole: "target" },
+              data: { ...n.data, spouseRole: "source" },
             };
           }
           return n;
@@ -226,6 +225,10 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
       onClose(); // close modal
     }
   };
+
+ 
+
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
