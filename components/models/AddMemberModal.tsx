@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -113,7 +112,7 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
     return n.data.gender !== selectedGender;
   });
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     if (step < 3) {
       setStep((s) => (s + 1) as Step);
     } else {
@@ -122,22 +121,20 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
         type: "custom",
         position: { x: 0, y: 0 },
         data: {
-          parentId:
+          parentIds:
             data.motherId || data.fatherId
               ? [data.fatherId, data.motherId].filter(
                   (id): id is string => id !== undefined,
                 )
               : [],
-          marriageId:
+          parentMarriageId:
             data.motherId && data.fatherId
               ? `${data.fatherId}-${data.motherId}`
               : undefined,
           label: `${data.firstName} ${data.lastName}`,
           subText: data.year ? `Born ${data.year}` : "",
-
           gender: data.gender,
           spouseRole: undefined,
-
           image:
             data.profileImage instanceof File
               ? URL.createObjectURL(data.profileImage)
@@ -147,8 +144,6 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
           description: "",
         },
       };
-
-      console.log("newNode:", newNode);
 
       // 🔥 get current state
       const currentNodes = [...nodes, newNode];
@@ -211,8 +206,10 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
 
       // 🔥 APPLY DAGRE LAYOUT HERE
       const finalNodes = data.spouseId ? updatedNodes : currentNodes;
-      const { nodes: layoutedNodes, edges: layoutedEdges } =
-        getLayoutedElements(finalNodes, currentEdges);
+
+    // ✅ await ELK async layout
+    const { nodes: layoutedNodes, edges: layoutedEdges } =
+      await getLayoutedElements(finalNodes, currentEdges);
 
       dispatch(
         setTree({
@@ -223,8 +220,6 @@ export default function AddMemberModal({ onClose }: { onClose: () => void }) {
       onClose(); // close modal
     }
   };
-
- 
 
 
 

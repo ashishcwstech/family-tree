@@ -12,8 +12,8 @@ export const initialNodes: FamilyNode[] = [
     type: "custom",
     position: { x: 0, y: 0 },
     data: {
-      parentId: [],
-      label: "Arthur Bennet",
+      parentIds: [],
+      label: "Arthur Bennetn1",
       subText: "Age 50",
       spouseRole: "source",
       gender: "male",
@@ -26,8 +26,8 @@ export const initialNodes: FamilyNode[] = [
     type: "custom",
     position: { x: 0, y: 0 },
     data: {
-      parentId: [],
-      label: "Jane Bennet",
+      parentIds: [],
+      label: "Jane Bennet ",
       subText: "Age 45",
       gender: "female",
       spouseRole: "target",
@@ -35,28 +35,28 @@ export const initialNodes: FamilyNode[] = [
       description: "Eleanor Bennett, 45...",
     },
   },
-  // {
-  //   id: "n2",
-  //   type: "custom",
-  //   position: { x: 0, y: 0 },
-  //   data: {
-  //     parentId: ["n1", "n4"],
-  //     marriageId: "n1-n4",
-  //     label: "Robert Bennett",
-  //     gender: "male",
-  //     subText: "Age 20",
-  //     spouseRole: "source",
-  //     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDZ6DiDj2VmdfEiRBb_wbsTuqtZwW5FFTo2yonjFngnaeCToAbTK6q4UbEDQy49nHDNt8W9B40v0wZmk8OG4IbkOyL98l3-MdYyfR7YH-zrOpHzX4V4zHHEl9NPp41884klGTVtngzWochPpiI5dGaS4Qjks2Cbpa49EmO0oBGphqzVhtKl_zXi8nWaT5W8bsy8pmYtTZlTciKbRQ2PACv1vWsrEOUalNsVAq--LEpUqMhvQ7B9_djYS8t8hhhsijNLVKXrB8UyC0E",
-  //     description: "Michael Sterling, 20...",
-  //   },
-  // },
+  {
+    id: "n2",
+    type: "custom",
+    position: { x: 0, y: 0 },
+    data: {
+      parentIds: ["n1", "n4"],
+      parentMarriageId: "n1-n4",
+      label: "Robert Bennett ",
+      gender: "male",
+      subText: "Age 20",
+      spouseRole: "source",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDZ6DiDj2VmdfEiRBb_wbsTuqtZwW5FFTo2yonjFngnaeCToAbTK6q4UbEDQy49nHDNt8W9B40v0wZmk8OG4IbkOyL98l3-MdYyfR7YH-zrOpHzX4V4zHHEl9NPp41884klGTVtngzWochPpiI5dGaS4Qjks2Cbpa49EmO0oBGphqzVhtKl_zXi8nWaT5W8bsy8pmYtTZlTciKbRQ2PACv1vWsrEOUalNsVAq--LEpUqMhvQ7B9_djYS8t8hhhsijNLVKXrB8UyC0E",
+      description: "Michael Sterling, 20...",
+    },
+  },
   // {
   //   id: "n3",
   //   type: "custom",
   //   position: { x: 0, y: 0 },
   //   data: {
-  //     parentId: ["n1","n4"],
-  //     marriageId: "n1-n4",
+  //     parentIds: ["n1","n4"],
+  //     parentMarriageId: "n1-n4",
   //     gender: "female",
   //     label: "Sarah Bennett",
   //     subText: "Age 18",
@@ -69,7 +69,7 @@ export const initialNodes: FamilyNode[] = [
   //   type: "custom",
   //   position: { x: 0, y: 0 },
   //   data: {
-  //     parentId: null,
+  //     parentIds: null,
   //     gender: "female",
   //     label: "Clara Bennett",
   //     subText: "1971",
@@ -83,7 +83,7 @@ export const initialNodes: FamilyNode[] = [
   //   type: "custom",
   //   position: { x: 0, y: 0 },
   //   data: {
-  //     parentId: null,
+  //     parentIds: null,
   //     label: "Clara Bennett 6",
   //     subText: "1971",
   //     gender: "female",
@@ -97,8 +97,8 @@ export const initialNodes: FamilyNode[] = [
   //   type: "custom",
   //   position: { x: 0, y: 0 },
   //   data: {
-  //     parentId: ["n2", "n6"],
-  //     marriageId: "n2-n6",
+  //     parentIds: ["n2", "n6"],
+  //     parentMarriageId: "n2-n6",
   //     gender: "male",
   //     label: "David Bennett",
   //     subText: "1965",
@@ -122,6 +122,30 @@ const initialEdges: FamilyEdge[] = [
     markerEnd: undefined,
     style: { stroke: "#e11d48", strokeWidth: 2 },
   },
+  // {
+  //   id: "n1-n2-parent",
+  //   source: "n1",
+  //   target: "n2",
+  //   sourceHandle: "bottom",
+  //   targetHandle: "top",
+  //   type: "default",
+  //   data: { edgeType: "parent" },
+  //   animated: false,
+  //   style: { stroke: "#555", strokeWidth: 1.5 },
+  // },
+
+  // 👇 Mother → Child
+  // {
+  //   id: "n4-n2-parent",
+  //   source: "n4",
+  //   target: "n2",
+  //   sourceHandle: "bottom",
+  //   targetHandle: "top",
+  //   type: "default",
+  //   data: { edgeType: "parent" },
+  //   animated: false,
+  //   style: { stroke: "#555", strokeWidth: 1.5 },
+  // },
   // {
   //   id: "n2-n5",
   //   source: "n2",
@@ -219,7 +243,7 @@ export default familySlice.reducer;
 //     type: "custom", // 👈 important
 //     position: { x: 0, y: 0 },  // parent center
 //     data: {
-//       parentId: [], // 👈 no parent (root)
+//       parentIds: [], // 👈 no parent (root)
 //       label: "Arthur Bennet",
 //       subText: "Age 50",
 //       spouseRole: "source", // 👈 emits marriage edge from right
@@ -234,7 +258,7 @@ export default familySlice.reducer;
 //     type: "custom",
 //     position: { x: 0, y: 0 }, // same level as father
 //     data: {
-//       parentId: [], // 👈 no parent (spouse of root)
+//       parentIds: [], // 👈 no parent (spouse of root)
 //       label: "Mother",
 //       subText: "Age 45",
 //        spouseRole: "target", // 👈 receives marriage edge on left
@@ -249,7 +273,7 @@ export default familySlice.reducer;
 //     type: "custom",
 //     position: { x: 0, y: 0 },
 //     data: {
-//       parentId:  ["n1", "n4"], // 👈 child of n1 and n4
+//       parentIds:  ["n1", "n4"], // 👈 child of n1 and n4
 //       label: "Sarah Bennett",
 //       subText: "Age 18",
 //       image:
@@ -263,7 +287,7 @@ export default familySlice.reducer;
 //     type: "custom",
 //      position: { x: 0, y: 0 },  // child below
 //     data: {
-//       parentId: ["n1", "n4"], // 👈 child of n1 and n4
+//       parentIds: ["n1", "n4"], // 👈 child of n1 and n4
 //       label: "Robert Bennett",
 //       subText: "Age 20",
 //        spouseRole: "source",    // ✅ add this — renders spouse-out handle
@@ -278,7 +302,7 @@ export default familySlice.reducer;
 //     type: "custom",
 //     position: { x: 0, y: 0 },  // child below
 //     data: {
-//       parentId: null, // 👈 child of n1
+//       parentIds: null, // 👈 child of n1
 //       label: "Clara Bennett",
 //       subText: "1971",
 //        spouseRole: "target",    // ✅ add this — renders spouse-in handle
@@ -291,7 +315,7 @@ export default familySlice.reducer;
 //     type: "custom",
 //     position: { x: 0, y: 0 },  // child below
 //     data: {
-//       parentId: null, // 👈 child of n1
+//       parentIds: null, // 👈 child of n1
 //       label: "Clara Bennett",
 //       subText: "1971",
 //        spouseRole: "target",    // ✅ add this — renders spouse-in handle
@@ -304,7 +328,7 @@ export default familySlice.reducer;
 //     type: "custom",
 //     position: { x: 0, y: 0 },  // child below
 //     data: {
-//       parentId: ["n2", "n6"], // 👈 child of n1
+//       parentIds: ["n2", "n6"], // 👈 child of n1
 //       marriageId: "n2-n6",
 //       label: "David Bennett",
 //       subText: "1965",

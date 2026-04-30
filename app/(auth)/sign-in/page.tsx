@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type SignupForm = z.infer<typeof signInSchema>;
 
@@ -29,7 +30,7 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="text-on-background min-h-screen flex items-center justify-center p-4 sm:p-6 bg-surface relative overflow-x-hidden">
+    <div className="text-on-background min-h-screen flex items-center justify-center p-4 sm:p-6 bg-surface relative">
         <div className="absolute inset-0 z-0">
           <img
             className="w-full h-full object-cover opacity-20 blur-sm scale-105"
@@ -135,9 +136,9 @@ export default function SignInPage() {
           <div className="text-center mt-6 sm:mt-8">
             <p className="text-on-surface-variant text-xs sm:text-sm">
               New here?
-              <a className="text-primary font-bold ml-1 hover:underline">
+              <Link   href="/sign-up" className="text-primary font-bold ml-1 hover:underline">
                 Create Account
-              </a>
+              </Link>
             </p>
           </div>
         </main>

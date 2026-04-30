@@ -37,15 +37,15 @@ export const MarriageEdge = ({
   const marriageIndex = marriagesOfSource.findIndex((e) => e.id === id);
   const dropY = lineY + 120 + marriageIndex * 50;
 
-  // ✅ Filter children — supports parentId as string, string[], or marriageId
+  // ✅ Filter children — supports parentIds as string, string[], or parentMarriageId
   const children = allNodes.filter((n) => {
-    const parentId = (n.data as any).parentId;
-    const marriageId = (n.data as any).marriageId;
+    const parentIds = (n.data as any).parentIds;
+    const parentMarriageId = (n.data as any).parentMarriageId;
 
     
-    if (marriageId) return marriageId === id;
+    if (parentMarriageId) return parentMarriageId === id;
 
-    if (Array.isArray(parentId) && parentId.length > 0) {
+    if (Array.isArray(parentIds) && parentIds.length > 0) {
       return true;
     }
 
@@ -71,13 +71,13 @@ export const MarriageEdge = ({
             const childCenterX = child.position.x + NODE_WIDTH / 2;
             const childTopY = child.position.y;
 
-            const parentIds = (child.data as any).parentId || [];
+            const parentIdss = (child.data as any).parentIds || [];
 
             // 👉 SINGLE PARENT
-            console.log((child.data as any).parentId);
-            if (parentIds.length === 1) {
-              const parentNode = allNodes.find((n) => n.id === parentIds[0]);
-              console.log('parentNode',parentNode);
+            //console.log((child.data as any).parentIds);
+            if (parentIdss.length === 1) {
+              const parentNode = allNodes.find((n) => n.id === parentIdss[0]);
+              //console.log('parentNode',parentNode);
               if (!parentNode) return null;
 
               const parentCenterX = parentNode.position.x + NODE_WIDTH / 2;
@@ -94,12 +94,12 @@ export const MarriageEdge = ({
               );
             }
 
-            // 👉 TWO PARENTS (existing logic)
+          
             const fatherX = sourceNode.position.x + NODE_WIDTH / 2;
             const motherX = targetNode.position.x + NODE_WIDTH / 2;
             return (
               <g key={child.id}>
-                {/* 👨 Father → child */}
+              
                 <path
                   d={`M${fatherX},${sourceY} L${fatherX},${dropY} L${childCenterX},${dropY} L${childCenterX},${childTopY}`}
                   fill="none"

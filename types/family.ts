@@ -4,8 +4,10 @@ export type PersonData = {
   label: string;
   subText: string;
   image: string | null;
-  parentId?: string | string[] | null;
-  marriageId?: string; // optional link to a specific marriage edge
+  parentIds?: string | string[] | null;
+  childernDetails? :any | null;
+  generatedParents?: boolean; //for default parent
+  parentMarriageId?: string; // optional link to a specific marriage edge
   description: string;
   gender:string;
   spouseRole?: "source" | "target" | null;

@@ -15,17 +15,16 @@ import { edgeTypes } from "@/components/edges/marriageEdge";
 
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setLayoutedNodes, setTree } from "@/store/familySlice";
+import { createPersonWithDefaultParents } from "@/lib/utils/familyHelpers";
 
 
 const CustomNode = ({ data }: CustomNodeProps) => {
-   const hasParent = Array.isArray(data.parentId)
-    ? data.parentId.length > 0
-    : !!data.parentId;
+   const hasParent = Array.isArray(data.parentIds) ? data.parentIds.length > 0 : !!data.parentIds;
+  
+   
   return (
     <div className="z-10 bg-surface-container-lowest p-4 rounded-xl shadow-[0px_8px_24px_rgba(44,47,49,0.06)] flex flex-col items-center w-36 hover:ring-2 hover:ring-primary transition-all cursor-pointer">
     
-      
-      
       {/* ✅ id="top" — matches targetHandle: "top" on child edges */}
       <Handle
         type="target"
@@ -103,6 +102,10 @@ const nodeTypes = {
   custom: CustomNode,
 };
 
+
+
+
+
 export default function FamilyTreeLayout() {
   // const [nodes, setNodes] = useState<FamilyNode[]>(initialNodes);
   // const [edges, setEdges] = useState<FamilyEdge[]>(initialEdges);
@@ -126,10 +129,37 @@ export default function FamilyTreeLayout() {
     [nodes, edges, dispatch],
   );
 
-  useEffect(() => {
-    const { nodes: ln, edges: le } = getLayoutedElements(nodes, edges);
+// useEffect(() => {
+//   if (!nodes.length) return;
+//   const { nodes: ln, edges: le } = getLayoutedElements(nodes, edges);
+//   dispatch(setTree({ nodes: ln as FamilyNode[], edges: le as FamilyEdge[] }));
+// }, []); // still fine if data is guaranteed at mount
+useEffect(() => {
+  if (!nodes.length) return;
+
+  const runLayout = async () => {
+    let updatedNodes = [...nodes];
+    let updatedEdges = [...edges];
+
+    nodes.forEach((node) => {
+      const hasNoParents =!node.data.parentIds || (Array.isArray(node.data.parentIds) && node.data.parentIds.length === 0);
+      if (hasNoParents) {
+        const { nodes: newNodes, edges: newEdges } = createPersonWithDefaultParents(node);
+        updatedNodes = updatedNodes.filter((n) => n.id !== node.id);
+        updatedNodes = [...updatedNodes, ...newNodes];
+        updatedEdges = [...updatedEdges, ...newEdges];
+      }
+    });
+
+    // console.log("check full update", updatedNodes, updatedEdges);
+
+    // ✅ await the async ELK layout
+    const { nodes: ln, edges: le } = await getLayoutedElements(updatedNodes, updatedEdges);
     dispatch(setTree({ nodes: ln as FamilyNode[], edges: le as FamilyEdge[] }));
-  }, []); // 👈 run once on mount
+  };
+
+  runLayout(); // ✅ call without awaiting — useEffect doesn't support async return
+}, []); // runs once on mount
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
@@ -138,16 +168,16 @@ export default function FamilyTreeLayout() {
         edges={edges}
         edgeTypes={edgeTypes}
         nodeTypes={nodeTypes}
-        defaultEdgeOptions={{
-          markerEnd: {
-            type: "arrowclosed",
-            color: "blue",
-          },
-          style: { stroke: "blue", strokeWidth: 2, strokeDasharray: "0" },
-          type: "step",
-          animated: true,
-        }}
-       nodesDraggable={false}
+        // defaultEdgeOptions={{
+        //   markerEnd: {
+        //     type: "arrowclosed",
+        //     color: "blue",
+        //   },
+        //   style: { stroke: "blue", strokeWidth: 2, strokeDasharray: "0" },
+        //   type: "step",
+        //   animated: false,
+        // }}   
+        //nodesDraggable={false}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         // onConnect={onConnect}
