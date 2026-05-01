@@ -20,8 +20,7 @@ export const memberSchema = z.object({
   lastName: z.string().min(2, "Last name is required"),
   gender: z
     .string({
-      error: (issue) =>
-        issue.input === undefined ? "Gender is required" : "Not a string",
+      error: (issue) => issue.input === undefined ? "Gender is required" : "Not a string",
     })
     .min(1, "Select gender"),
   month: z.string().min(1, "Select month"),

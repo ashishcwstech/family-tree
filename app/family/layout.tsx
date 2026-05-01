@@ -30,7 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Content */}
-        <main className="flex-1 p-6 md:p-8">{children}</main>
+        <main className="flex-1 p-6 md:p-8 bg-surface">{children}</main>
       </div>
     </div>
   );
