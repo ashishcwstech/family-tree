@@ -87,12 +87,19 @@ export default function FamilyChart() {
           const isChild  = rel_type === "son" || rel_type === "daughter";
           const isParent = rel_type === "father" || rel_type === "mother";
 
+        
         const newPerson = {
           ...memberData,
           rels: {
             ...(memberData.rels ?? {}),
             ...(isSpouse && { spouses:  [rel_id] }),
-            ...(isChild  && { parents: [rel_id] }),
+            ...(isChild  && {
+                parents: [
+                  newRelData.rel_id,
+                  // ✅ only include coparent if they actually exist in data
+                  ...(newRelData.other_parent_id ? [newRelData.other_parent_id] : []),
+                ],
+              }),
             ...(isParent && { children:  [rel_id] }),
           },
         };
