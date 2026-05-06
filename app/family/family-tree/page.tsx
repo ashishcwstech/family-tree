@@ -36,10 +36,30 @@ export default function FamilyChart() {
   const handleOpenAddRelative = useCallback((person: any) => {
     const f3Chart = f3ChartRef.current;
     if (!f3Chart) return;
+
+    const addRelInstance = f3Chart.editTreeInstance?.addRelativeInstance;
+    if (addRelInstance?.cleanUp) {
+      const currentData = f3Chart.store.getData();
+      const cleaned = addRelInstance.cleanUp(currentData) ?? currentData;
+
+      f3Chart.store.updateData(cleaned);
+      f3Chart.store.updateTree({});
+
+      // reset instance
+      addRelInstance.is_active = false;
+      addRelInstance.datum = null;
+      addRelInstance.onChange = null;
+      addRelInstance.onCancel = null;
+    }
+
+ 
+
+
     // ✅ get clean datum from chart store
     const datum = f3Chart.store.getDatum(person.id);
     const f3EditTree = f3Chart.editTree();
     if (typeof f3EditTree.addRelative === "function") {
+    
       f3EditTree.addRelative(datum);
     }
   }, []);

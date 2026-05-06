@@ -13,11 +13,11 @@ type FormData = z.infer<typeof memberSchema>;
 export const memberSchema = z.object({
   firstName: z.string().min(2, "First name is required"),
   lastName: z.string().min(2, "Last name is required"),
-  gender: z
-    .string({
-      error: (issue) => issue.input === undefined ? "Gender is required" : "Not a string",
-    })
-    .min(1, "Select gender"),
+  // gender: z
+  //   .string({
+  //     error: (issue) => issue.input === undefined ? "Gender is required" : "Not a string",
+  //   })
+  //   .min(1, "Select gender"),
   birthMonth: z.string().min(1, "Select month"),
   birthDay: z.number().min(1).max(31).or(z.nan()),
   birthYear: z.number().min(1900).max(new Date().getFullYear()).or(z.nan()),
@@ -52,7 +52,7 @@ export default function AddMemberModal({  onAddMemberDetails,memberDetails,isAdd
     defaultValues: {
       firstName: memberDetails.data.firstName || "",
       lastName: memberDetails.data.lastName || "",
-      gender: memberDetails.data.gender || "",   // ✅ ADD THIS
+      // gender: memberDetails.data.gender || "",   // ✅ ADD THIS
       birthDay: memberDetails.data.birthDay || "",
       birthMonth: memberDetails.data.birthMonth || "",
       birthYear:memberDetails.data.birthYear || "",
@@ -60,7 +60,7 @@ export default function AddMemberModal({  onAddMemberDetails,memberDetails,isAdd
   });
 
 
-  const selectedGender = watch("gender");
+  //const selectedGender = watch("gender");
   const onSubmit = async (data: FormData) => {
     if (step < 2) {
       setStep((s) => (s + 1) as Step);
@@ -74,7 +74,7 @@ export default function AddMemberModal({  onAddMemberDetails,memberDetails,isAdd
           lastName: data.lastName,
           birthYear: `${data.birthYear}`,
           avatar: data.profileImage?.[0] ?? "https://static8.depositphotos.com/1009634/988/v/950/depositphotos_9883921-stock-illustration-no-user-profile-picture.jpg",
-          gender: data.gender === "male" ? "M" : data.gender === "female" ? "F" : "O",
+          gender: memberDetails.data.gender,
         },
         rels: {
           spouses: memberDetails.rels.spouses,
@@ -172,7 +172,7 @@ export default function AddMemberModal({  onAddMemberDetails,memberDetails,isAdd
                 </div>
 
                 {/* Gender */}
-                <div className="col-span-2">
+                {/* <div className="col-span-2">
                   <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-2 ml-1">
                     Gender
                   </label>
@@ -206,7 +206,7 @@ export default function AddMemberModal({  onAddMemberDetails,memberDetails,isAdd
                   <p className="text-red-500 text-sm">
                     {errors.gender?.message}
                   </p>
-                </div>
+                </div> */}
 
                 {/* Date of Birth */}
                 <div className="col-span-2">
