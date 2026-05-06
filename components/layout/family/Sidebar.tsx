@@ -18,18 +18,18 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
 
   return (
     <aside
-  className={`
-    fixed left-0 top-16 h-[calc(100vh-64px)]
-    bg-slate-50 dark:bg-slate-950 flex flex-col py-6 px-2 z-40
-    transition-all duration-300 ease-in-out
+    className={`
+      fixed left-0 top-16 h-[calc(100vh-64px)]
+      bg-slate-50 dark:bg-slate-950 flex flex-col py-6 px-2 z-40
+      transition-all duration-300 ease-in-out
 
-    ${isOpen ? "translate-x-0" : "-translate-x-full"}   // 👈 mobile hide
+      ${isOpen ? "translate-x-0" : "-translate-x-full"}   // 👈 mobile hide
 
-    md:translate-x-0                                   // 👈 always visible on desktop
-    ${isOpen ? "md:w-64" : "md:w-20"}                  // 👈 desktop collapse
-    w-64                                               // 👈 mobile full width
-  `}
->
+      md:translate-x-0                                   // 👈 always visible on desktop
+      ${isOpen ? "md:w-64" : "md:w-20"}                  // 👈 desktop collapse
+      w-64                                               // 👈 mobile full width
+    `}
+  >
       {/* BRAND */}
       <div className="mb-6 px-3">
         <h2

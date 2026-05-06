@@ -1,13 +1,13 @@
 import Image from "next/image";
 import { useState } from "react";
-import AddMemberModal from "@/components/models/AddMemberModal";
+
 
 export default function Header({
   toggleSidebar,
 }: {
   toggleSidebar: () => void;
 }) {
-  const [showModal, setShowModal] = useState(false);
+ 
   return (
     <>
       <nav className="sticky  top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 shadow-sm h-16 flex justify-between items-center px-6">
@@ -42,12 +42,12 @@ export default function Header({
 
         {/* RIGHT */}
         <div className="flex items-center gap-4">
-          <button
+          {/* <button
             onClick={() => setShowModal(true)}
             className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white"
           >
             Add Member
-          </button>
+          </button> */}
 
           <button
             aria-label="Notifications"
@@ -68,8 +68,7 @@ export default function Header({
           />
         </div>
       </nav>
-      {/* ✅ Modal */}
-      {showModal && <AddMemberModal onClose={() => setShowModal(false)} />}
+     
     </>
   );
 }

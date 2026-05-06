@@ -42,7 +42,8 @@ export default function DashboardPage() {
   const totalMembers = nodes.length;
 
   return (
-    <div className="space-y-8">
+    // flex w-full h-screen overflow-hidden
+    <div className="md:p-8 space-y-8">
       {/* ─── Welcome ─── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
