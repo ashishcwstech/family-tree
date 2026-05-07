@@ -162,6 +162,7 @@ export default function FamilyChart() {
 
       setIsAddMember(false);
       setIsEditMember(false);
+      setIsPanelOpen(false);
     },
     [addMemberDetails],
   );
@@ -292,6 +293,7 @@ export default function FamilyChart() {
         />
         <PersonPanel
           person={selectedPerson}
+           allPeople={chartDataRef.current} // 👈 here
           isOpen={isPanelOpen}
           isEditMember={() => setIsEditMember(true)}
           onClose={() => setIsPanelOpen(false)}

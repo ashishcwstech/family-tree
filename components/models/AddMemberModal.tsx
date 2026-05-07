@@ -5,10 +5,9 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-type Step = 1 | 2 ;
+type Step = 1 | 2;
 
 type FormData = z.infer<typeof memberSchema>;
-
 
 export const memberSchema = z.object({
   firstName: z.string().min(2, "First name is required"),
@@ -25,22 +24,22 @@ export const memberSchema = z.object({
 });
 
 type AddMemberProps = {
-   onAddMemberDetails: (data: any) => void; // ✅ function, not data
+  onAddMemberDetails: (data: any) => void; // ✅ function, not data
   memberDetails?: any;
   // 👈 define what it receives
-  isAddMember:Boolean;
-  isEditMember:Boolean;
+  isAddMember: Boolean;
+  isEditMember: Boolean;
   onClose: () => void;
 };
 
-
-export default function AddMemberModal({  onAddMemberDetails,memberDetails,isAddMember,isEditMember, onClose }: AddMemberProps) {
+export default function AddMemberModal({
+  onAddMemberDetails,
+  memberDetails,
+  isAddMember,
+  isEditMember,
+  onClose,
+}: AddMemberProps) {
   const [step, setStep] = useState<Step>(1);
-
-
-
- 
-
   const {
     register,
     handleSubmit,
@@ -55,36 +54,114 @@ export default function AddMemberModal({  onAddMemberDetails,memberDetails,isAdd
       // gender: memberDetails.data.gender || "",   // ✅ ADD THIS
       birthDay: memberDetails.data.birthDay || "",
       birthMonth: memberDetails.data.birthMonth || "",
-      birthYear:memberDetails.data.birthYear || "",
+      birthYear: memberDetails.data.birthYear || "",
     },
   });
 
+  const profileImage = watch("profileImage") as FileList;
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  useEffect(() => {
+    if (!profileImage?.[0] || typeof profileImage[0] === "string") {
+      // ✅ Handle AI enhanced image (already a base64 string)
+      setPreviewImage(typeof profileImage === "string" ? profileImage : null);
+      return;
+    }
+    const url = URL.createObjectURL(profileImage[0]);
+    setPreviewImage(url);
+    return () => URL.revokeObjectURL(url); // ✅ cleanup
+  }, [profileImage]);
 
   //const selectedGender = watch("gender");
   const onSubmit = async (data: FormData) => {
     if (step < 2) {
       setStep((s) => (s + 1) as Step);
     } else {
-      
+      let avatar: string =
+        memberDetails?.data?.avatar ??
+        "https://static8.depositphotos.com/1009634/988/v/950/depositphotos_9883921-stock-illustration-no-user-profile-picture.jpg";
+
+      try {
+        if (typeof data.profileImage === "string") {
+          // ✅ AI enhanced — base64 string, convert to File then upload
+          const base64 = data.profileImage.split(",")[1];
+          const byteArray = Uint8Array.from(atob(base64), (c) =>
+            c.charCodeAt(0),
+          );
+          const file = new File([byteArray], "enhanced.png", {
+            type: "image/png",
+          });
+          avatar = await uploadImage(file);
+        } else if (data.profileImage?.[0] instanceof File) {
+          // ✅ Regular file upload
+          avatar = await uploadImage(data.profileImage[0]);
+        }
+      } catch (err) {
+        console.error("Image upload failed:", err);
+        // continue with default avatar
+      }
+
       const memberData = {
-        id:memberDetails.id,
+        id: memberDetails.id,
         data: {
-          
           firstName: data.firstName,
           lastName: data.lastName,
           birthYear: `${data.birthYear}`,
-          avatar: data.profileImage?.[0] ?? "https://static8.depositphotos.com/1009634/988/v/950/depositphotos_9883921-stock-illustration-no-user-profile-picture.jpg",
+          avatar,
           gender: memberDetails.data.gender,
         },
         rels: {
           spouses: memberDetails.rels.spouses,
           children: memberDetails.rels.children,
-          parents:memberDetails.rels.parents,
+          parents: memberDetails.rels.parents,
         },
       };
-      console.log('memberData',memberData);
+      console.log("memberData", memberData);
       onAddMemberDetails(memberData); // ✅ now actually a function
       onClose();
+    }
+  };
+
+  const uploadImage = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/image/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    return data.url; // ← "/uploads/filename.png"
+  };
+
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const handleAiEnhance = async (file: File) => {
+    console.log("handel");
+    if (!(file instanceof File)) return; // ✅ guard against base64 string
+    console.log("file", file);
+    setIsEnhancing(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/image/enhance", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error);
+      }
+
+      console.log("asfdasdf", data);
+      setIsEnhancing(false);
+      setValue("profileImage", data.image);
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -123,7 +200,8 @@ export default function AddMemberModal({  onAddMemberDetails,memberDetails,isAdd
                     step >= s ? "bg-primary" : "bg-surface-container-high"
                   }`}
                 />
-                <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-widest ${
                     step >= s ? "text-primary" : "text-on-surface-variant"
                   }`}
                 >
@@ -301,30 +379,92 @@ export default function AddMemberModal({  onAddMemberDetails,memberDetails,isAdd
             </div>
           )}
 
-         
-         
           {step === 2 && (
             <div className="space-y-8">
               <div className="space-y-3">
                 <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1">
                   Profile Photo
                 </label>
-                <div className="relative flex flex-col items-center justify-center border border-dashed border-outline-variant/30 rounded-lg bg-surface-container-lowest p-8 text-center cursor-pointer hover:bg-surface-container-low transition-all">
-                  <span className="material-symbols-outlined text-3xl text-primary mb-2">
-                    add_a_photo
-                  </span>
-                  <p className="text-sm text-on-surface">
-                    Upload profile image
-                  </p>
-                  <p className="text-xs text-on-surface-variant">
-                    PNG, JPG (max 5MB)
-                  </p>
-                  <input
-                    type="file"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    {...register("profileImage")}
-                  />
+
+                <div className="relative border border-dashed border-outline-variant/30 rounded-2xl bg-surface-container-lowest p-6 text-center hover:bg-surface-container-low transition-all overflow-hidden">
+                  {/* Preview */}
+                  {previewImage ? (
+                    <div className="flex flex-col items-center gap-4">
+                      <img
+                        src={previewImage}
+                        alt="Preview"
+                        className={`w-32 h-32 rounded-2xl object-cover border shadow-md transition-all duration-300 ${
+                          isEnhancing ? "blur-sm brightness-75 scale-95" : ""
+                        }`}
+                      />
+
+                      <div>
+                        <p className="text-sm font-medium text-on-surface">
+                          Image Selected
+                        </p>
+
+                        <p className="text-xs text-on-surface-variant">
+                          Click to change image
+                        </p>
+                      </div>
+
+                      {/* AI Buttons */}
+                      <div className="flex items-center gap-3 mt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (profileImage?.[0] instanceof File) {
+                              handleAiEnhance(profileImage[0]);
+                            }
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:opacity-90 transition-all"
+                        >
+                          <span className="material-symbols-outlined text-base">
+                            auto_fix_high
+                          </span>
+                          {isEnhancing ? "Enhancing..." : "AI Enhance"}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setValue("profileImage", null);
+                            setIsEnhancing(false);
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-high text-sm font-medium hover:bg-surface-container-highest transition-all"
+                        >
+                          <span className="material-symbols-outlined text-base">
+                            delete
+                          </span>
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center">
+                      <span className="material-symbols-outlined text-3xl text-primary mb-2">
+                        add_a_photo
+                      </span>
+
+                      <p className="text-sm text-on-surface">
+                        Upload profile image
+                      </p>
+
+                      <p className="text-xs text-on-surface-variant">
+                        PNG, JPG (max 5MB)
+                      </p>
+
+                      {/* Input */}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        {...register("profileImage")}
+                      />
+                    </div>
+                  )}
                 </div>
+
                 <p className="text-red-500 text-sm">
                   {typeof errors.profileImage?.message === "string"
                     ? errors.profileImage.message
