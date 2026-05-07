@@ -1,47 +1,92 @@
 "use client";
-import { UserRoundPlus ,X } from "lucide-react"
-
+import { UserRoundPlus, X } from "lucide-react";
 
 interface Person {
   id: string;
   data: {
     firstName?: string;
     lastName?: string;
-    birthday?: string;
-    birthplace?: string;
+    birthDay?: string;
+    birthMonth?: string;
+    birthYear?: string;
+    birthPlace?: string;
     death?: string;
-    deathplace?: string;
+    deathPlace?: string;
     gender?: string;
     avatar?: string;
     image?: string;
     summary?: string;
     generation?: string;
   };
+  rels?:any;
 }
 
 interface Props {
   person: Person | null;
+   allPeople?: Person[]; // 👈 add this
   isOpen: boolean;
   onClose: () => void;
-  isEditMember:() => void;
-  onOpenAddRelative?: (person: any) => void;  
+  isEditMember: () => void;
+  onOpenAddRelative?: (person: any) => void;
 }
 
-export default function PersonPanel({ person,isEditMember, isOpen, onClose,onOpenAddRelative }: Props) {
+export default function PersonPanel({
+  person,
+  allPeople,
+  isEditMember,
+  isOpen,
+  onClose,
+  onOpenAddRelative,
+}: Props) {
   if (!person) return null;
 
-  const dd         = person.data;
-  const firstName  = dd["firstName"] || "";
-  const lastName   = dd["lastName"]  || "";
-  const name       = `${firstName} ${lastName}`.trim() || "Unknown";
-  const initials   = name.split(" ").map((n) => n[0] || "").join("").slice(0, 2).toUpperCase();
-  const image      = dd.avatar || dd.image || "";
-  const birthday   = dd.birthday   || "—";
-  const birthplace = dd.birthplace || "";
-  const death      = dd.death      || "—";
-  const deathplace = dd.deathplace || (dd.death ? "" : "Active");
-  const summary    = dd.summary    || "";
+  const dd = person.data;
+  const firstName = dd["firstName"] || "";
+  const lastName = dd["lastName"] || "";
+  const name = `${firstName} ${lastName}`.trim() || "Unknown";
+  const initials = name
+    .split(" ")
+    .map((n) => n[0] || "")
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  const image = dd.avatar || dd.image || "";
+  const birthday = dd.birthDay || "—";
+  const birthPlace = dd.birthPlace || "";
+  const death = dd.death || "—";
+  const deathPlace = dd.deathPlace || (dd.death ? "" : "Active");
+  const summary = dd.summary || "";
   const generation = dd.generation || "";
+
+
+  const pronoun =
+  dd.gender === "M"
+    ? "He"
+    : dd.gender === "F"
+      ? "She"
+      : "They";
+
+const spouseNames =
+  person.rels?.spouses
+    ?.map((id:any) => {
+      const spouse = allPeople?.find((p) => p.id === id);
+      return spouse
+        ? `${spouse.data.firstName || ""} ${spouse.data.lastName || ""}`.trim()
+        : null;
+    })
+    .filter(Boolean)
+    .join(", ") || "";
+
+const childrenNames =
+  person.rels?.children
+    ?.map((id:any) => {
+      const child = allPeople?.find((p) => p.id === id);
+      return child
+        ? `${child.data.firstName || ""} ${child.data.lastName || ""}`.trim()
+        : null;
+    })
+    .filter(Boolean)
+    .join(", ") || "";
 
   return (
     <>
@@ -67,20 +112,21 @@ export default function PersonPanel({ person,isEditMember, isOpen, onClose,onOpe
         {isOpen && (
           <>
             <div className="flex justify-between items-start mb-8">
-                {/* Close button — now on the LEFT */}
-                <button
-                    onClick={onClose}
-                    className="shadow-[0px_8px_24px_rgba(44,47,49,0.06)] border border-outline-variant/10 bg-surface-container-lowest w-12 h-12 rounded-xl flex items-center justify-center hover:bg-surface-container-low transition-colors"
-                >
-                    <X className="w-5 h-5 text-on-surface-variant" />
-                </button>
+              {/* Close button — now on the LEFT */}
+              <button
+                onClick={onClose}
+                className="shadow-[0px_8px_24px_rgba(44,47,49,0.06)] border border-outline-variant/10 bg-surface-container-lowest w-12 h-12 rounded-xl flex items-center justify-center hover:bg-surface-container-low transition-colors"
+              >
+                <X className="w-5 h-5 text-on-surface-variant" />
+              </button>
 
-                {/* Icon — now on the RIGHT */}
-                <div
-                    onClick={() => onOpenAddRelative?.(person)}
-                    className="shadow-[0px_8px_24px_rgba(44,47,49,0.06)] border border-outline-variant/10 signature-gradient w-12 h-12 rounded-xl flex items-center justify-center">
-                    <UserRoundPlus className="w-5 h-5 text-primary" />
-                </div>
+              {/* Icon — now on the RIGHT */}
+              <div
+                onClick={() => onOpenAddRelative?.(person)}
+                className="shadow-[0px_8px_24px_rgba(44,47,49,0.06)] border border-outline-variant/10 signature-gradient w-12 h-12 rounded-xl flex items-center justify-center"
+              >
+                <UserRoundPlus className="w-5 h-5 text-primary" />
+              </div>
             </div>
 
             {/* Avatar + name */}
@@ -115,9 +161,9 @@ export default function PersonPanel({ person,isEditMember, isOpen, onClose,onOpe
                   Born
                 </p>
                 <p className="font-bold text-sm">{birthday}</p>
-                {birthplace && (
+                {birthPlace && (
                   <p className="text-[10px] text-on-surface-variant mt-0.5">
-                    {birthplace}
+                    {birthPlace}
                   </p>
                 )}
               </div>
@@ -127,22 +173,95 @@ export default function PersonPanel({ person,isEditMember, isOpen, onClose,onOpe
                 </p>
                 <p className="font-bold text-sm">{death}</p>
                 <p className="text-[10px] text-on-surface-variant mt-0.5">
-                  {deathplace}
+                  {deathPlace}
                 </p>
               </div>
             </div>
 
             {/* Life Summary */}
-            {summary && (
-              <div className="mb-8">
-                <h3 className="text-xs text-on-surface-variant uppercase tracking-wider mb-3">
-                  Life Summary
-                </h3>
-                <p className="text-sm text-on-surface leading-relaxed">
-                  {summary}
-                </p>
-              </div>
-            )}
+
+            {/* Biography */}
+            {/* Biography */}
+            {/* Biography */}
+{/* Biography */}
+<div className="mb-8">
+  <h3 className="text-xs text-on-surface-variant uppercase tracking-wider mb-3">
+    Biography
+  </h3>
+
+  <div className="bg-surface-container-low rounded-2xl p-5 border border-outline-variant/10">
+    <div className="flex items-start gap-4">
+
+      {/* Icon */}
+      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+        <span className="material-symbols-outlined text-primary">
+          auto_stories
+        </span>
+      </div>
+
+      {/* Content */}
+      <div className="space-y-4">
+
+        {/* Main Bio */}
+        <p className="text-sm leading-7 text-on-surface">
+          <span className="font-semibold">{name}</span>
+
+          {(dd.birthDay || dd.birthMonth || dd.birthYear) && (
+            <>
+              {" "}was born on{" "}
+              <span className="font-medium">
+                {[dd.birthDay, dd.birthMonth, dd.birthYear]
+                  .filter(Boolean)
+                  .join(" ")}
+              </span>
+            </>
+          )}
+
+          {birthPlace && (
+            <>
+              {" "}in{" "}
+              <span className="font-medium">{birthPlace}</span>
+            </>
+          )}
+          .
+        </p>
+
+        {/* Spouse */}
+        {spouseNames && (
+          <p className="text-sm leading-7 text-on-surface">
+            {pronoun} is married to{" "}
+            <span className="font-medium">{spouseNames}</span>.
+          </p>
+        )}
+
+        {/* Children */}
+        {childrenNames && (
+          <p className="text-sm leading-7 text-on-surface">
+            {pronoun} has children named{" "}
+            <span className="font-medium">{childrenNames}</span>.
+          </p>
+        )}
+
+        {/* Generation */}
+        <p className="text-sm leading-7 text-on-surface">
+          {pronoun} is part of the{" "}
+          <span className="font-medium">
+            {generation || "family lineage"}
+          </span>.
+        </p>
+
+        {/* Summary */}
+        {summary && (
+          <div className="pt-3 border-t border-outline-variant/10">
+            <p className="text-sm text-on-surface-variant leading-7">
+              {summary}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</div>
 
             {/* Documents placeholder */}
             <div className="space-y-3 mb-8">
@@ -163,7 +282,10 @@ export default function PersonPanel({ person,isEditMember, isOpen, onClose,onOpe
             </div>
 
             {/* Edit button */}
-            <button onClick={isEditMember}  className="w-full py-3 rounded-2xl bg-surface-container-high text-sm font-bold hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2">
+            <button
+              onClick={isEditMember}
+              className="w-full py-3 rounded-2xl bg-surface-container-high text-sm font-bold hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2"
+            >
               <span className="material-symbols-outlined text-base">edit</span>
               Edit Profile
             </button>
@@ -173,4 +295,3 @@ export default function PersonPanel({ person,isEditMember, isOpen, onClose,onOpe
     </>
   );
 }
-
