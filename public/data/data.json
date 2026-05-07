@@ -3,9 +3,9 @@
     "id": "0",
     "data": {
       "firstName": "Agnus",
-      "lastName": "",
-      "birthDay":"",
-      "birthMonth":"",
+      "lastName": "van",
+      "birthDay":"14",
+      "birthMonth":"April",
       "birthYear": "1975",
       "birthPlace": "US California",
       "deathPlace": "",

@@ -105,6 +105,8 @@ export default function AddMemberModal({
         data: {
           firstName: data.firstName,
           lastName: data.lastName,
+          birthDay: data.birthDay,
+          birthMonth: data.birthMonth,
           birthYear: `${data.birthYear}`,
           avatar,
           gender: memberDetails.data.gender,
