@@ -4,7 +4,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI, { toFile } from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: "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" });
 
 export async function POST(req: NextRequest) {
   try {
